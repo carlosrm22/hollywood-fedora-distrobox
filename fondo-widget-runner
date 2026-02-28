@@ -38,15 +38,24 @@ has_widget_name() {
   return 1
 }
 
+map_ok() {
+  local cols lines
+  cols=$(tput cols 2>/dev/null || echo 80)
+  lines=$(tput lines 2>/dev/null || echo 24)
+  local min_cols="${FONDO_MAP_MIN_COLS:-68}"
+  local min_lines="${FONDO_MAP_MIN_LINES:-16}"
+  (( cols >= min_cols && lines >= min_lines ))
+}
+
 iter=0
 while true; do
   iter=$((iter + 1))
-  if has_widget_name "map" && (( iter % 12 == 0 )); then
+  if has_widget_name "map" && map_ok && (( iter % 8 == 0 )); then
     pick="map"
   else
     pick="${widgets[RANDOM % ${#widgets[@]}]}"
     # Reduce flicker from ASCII video by deprioritizing mplayer.
-    if [[ "$pick" == "mplayer" ]] && (( RANDOM % 100 < 85 )); then
+    if [[ "$pick" == "mplayer" ]] && (( RANDOM % 100 < 97 )); then
       for _ in 1 2 3 4 5; do
         alt="${widgets[RANDOM % ${#widgets[@]}]}"
         if [[ "$alt" != "mplayer" ]]; then

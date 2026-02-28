@@ -40,6 +40,18 @@ has_widget() {
   "$path" --check >/dev/null 2>&1
 }
 
+map_ok() {
+  local min_cols="${FONDO_MAP_MIN_COLS:-68}"
+  local min_lines="${FONDO_MAP_MIN_LINES:-16}"
+  (( cols >= min_cols && lines >= min_lines ))
+}
+
+mplayer_ok() {
+  local min_cols="${FONDO_MPLAYER_MIN_COLS:-88}"
+  local min_lines="${FONDO_MPLAYER_MIN_LINES:-22}"
+  (( cols >= min_cols && lines >= min_lines ))
+}
+
 while true; do
   cmds=()
   cols=$(tput cols 2>/dev/null || echo 80)
@@ -64,7 +76,10 @@ while true; do
     net)
       # Barracuda readings with strong presence, plus live network tools.
       if command -v upsilon-readings >/dev/null 2>&1; then
-        cmds+=("upsilon-readings" "upsilon-readings" "upsilon-readings" "upsilon-readings")
+        cmds+=(
+          "upsilon-readings" "upsilon-readings" "upsilon-readings"
+          "upsilon-readings" "upsilon-readings" "upsilon-readings"
+        )
       fi
       command -v bmon >/dev/null 2>&1 && cmds+=("bmon --show-all")
       has_widget speedometer && cmds+=("$widget_dir/speedometer")
@@ -89,29 +104,33 @@ while true; do
       has_widget man && cmds+=("$widget_dir/man")
       has_widget code && cmds+=("$widget_dir/code")
       has_widget jp2a && cmds+=("$widget_dir/jp2a")
-      # Show map occasionally; too frequent map overlays reduce readability.
-      if has_widget map && (( RANDOM % 100 < 35 )); then
+      # Show map at medium frequency, but only when pane size is good.
+      if has_widget map && map_ok && (( RANDOM % 100 < 55 )); then
         cmds+=("$widget_dir/map")
       fi
-      # Reduce flicker by showing mplayer only occasionally.
-      if has_widget mplayer && (( RANDOM % 100 < 18 )); then
+      # Reduce flicker: rare mplayer, and only with large panes.
+      if has_widget mplayer && mplayer_ok && (( RANDOM % 100 < 6 )); then
         cmds+=("$widget_dir/mplayer")
       fi
       ;;
     fx)
       # Prioritize Barracuda and map feed, keep cmatrix as occasional effect.
       if command -v upsilon-readings >/dev/null 2>&1; then
-        cmds+=("upsilon-readings" "upsilon-readings" "upsilon-readings" "upsilon-readings" "upsilon-readings")
+        cmds+=(
+          "upsilon-readings" "upsilon-readings" "upsilon-readings"
+          "upsilon-readings" "upsilon-readings" "upsilon-readings"
+          "upsilon-readings"
+        )
       fi
-      if has_widget map && (( RANDOM % 100 < 22 )); then
+      if has_widget map && map_ok && (( RANDOM % 100 < 38 )); then
         cmds+=("$widget_dir/map")
       fi
       command -v cmatrix >/dev/null 2>&1 && cmds+=("cmatrix -ab -u 10")
       has_widget apg && cmds+=("$widget_dir/apg")
       has_widget sshart && cmds+=("$widget_dir/sshart")
       has_widget jp2a && cmds+=("$widget_dir/jp2a")
-      # Reduce flicker by showing mplayer only occasionally.
-      if has_widget mplayer && (( RANDOM % 100 < 10 )); then
+      # Reduce flicker: very rare mplayer, and only with large panes.
+      if has_widget mplayer && mplayer_ok && (( RANDOM % 100 < 3 )); then
         cmds+=("$widget_dir/mplayer")
       fi
       ;;
@@ -131,8 +150,11 @@ while true; do
   fi
   pick="${cmds[$pick_idx]}"
 
+  run_duration="$default_duration"
+  [[ "$pick" == *"mplayer"* ]] && run_duration="${FONDO_MPLAYER_MAX_SECS:-5}"
+
   clear
   printf '\033[1;96m[%s %sx%s]\033[0m \033[1;92m%s\033[0m\n\n' "$mode" "$cols" "$lines" "$pick"
-  run_for "$default_duration" "TERM=tmux-256color COLORTERM=truecolor $pick"
+  run_for "$run_duration" "TERM=tmux-256color COLORTERM=truecolor $pick"
   sleep 0.2
 done
