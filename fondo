@@ -6,7 +6,7 @@ motion="${FONDO_MOTION:-1}"
 interval="${FONDO_LAYOUT_INTERVAL:-8}"
 main_width="${FONDO_MAIN_PANE_WIDTH:-58}"
 missing=()
-for cmd in tmux procs cmatrix watch; do
+for cmd in tmux procs watch; do
   command -v "$cmd" >/dev/null 2>&1 || missing+=("$cmd")
 done
 
@@ -49,19 +49,19 @@ tmux set-option -t "$session" -gq mouse on
 tmux set-option -at "$session" -gq terminal-overrides ",xterm-256color:RGB,screen-256color:RGB,tmux-256color:RGB"
 
 p1="$(tmux list-panes -t "$win_id" -F "#{pane_id}" | head -n1)"
-p2="$(tmux split-window -h -P -F "#{pane_id}" -t "$p1" "TERM=tmux-256color COLORTERM=truecolor procs --watch --color always --theme dark")"
+p2="$(tmux split-window -h -P -F "#{pane_id}" -t "$p1" "TERM=tmux-256color COLORTERM=truecolor /home/carlos/.local/bin/fondo-pane-rotator net")"
 p3="$(tmux split-window -v -P -F "#{pane_id}" -t "$p1" "TERM=tmux-256color COLORTERM=truecolor /home/carlos/.local/bin/fondo-pane-rotator disk")"
-p4="$(tmux split-window -v -P -F "#{pane_id}" -t "$p2" "TERM=tmux-256color COLORTERM=truecolor /home/carlos/.local/bin/fondo-pane-rotator profile")"
-p5="$(tmux split-window -v -P -F "#{pane_id}" -t "$p3" "TERM=tmux-256color COLORTERM=truecolor cmatrix -ab -u 10")"
+p4="$(tmux split-window -v -P -F "#{pane_id}" -t "$p2" "TERM=tmux-256color COLORTERM=truecolor /home/carlos/.local/bin/fondo-pane-rotator cores")"
+p5="$(tmux split-window -v -P -F "#{pane_id}" -t "$p3" "TERM=tmux-256color COLORTERM=truecolor /home/carlos/.local/bin/fondo-pane-rotator fx")"
 p6="$(tmux split-window -v -P -F "#{pane_id}" -t "$p4" "TERM=tmux-256color COLORTERM=truecolor FONDO_WIDGET_DURATION=16 /home/carlos/.local/bin/fondo-widget-runner")"
 
 : "$p5" "$p6"
 
 tmux select-pane -t "$p1" -T "CPU/RAM Rotating Mix"
-tmux select-pane -t "$p2" -T "Processes"
-tmux select-pane -t "$p3" -T "Disk/FS Rotating Mix"
-tmux select-pane -t "$p4" -T "System Profile Rotating Mix"
-tmux select-pane -t "$p5" -T "Matrix"
+tmux select-pane -t "$p2" -T "Network + Barracuda"
+tmux select-pane -t "$p3" -T "Disk Activity"
+tmux select-pane -t "$p4" -T "Core Usage"
+tmux select-pane -t "$p5" -T "FX + Barracuda Rotating Mix"
 tmux select-pane -t "$p6" -T "Original Hollywood Widgets"
 
 # Start on a readable, non-flat layout.

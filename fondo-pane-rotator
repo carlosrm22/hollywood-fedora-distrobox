@@ -3,7 +3,7 @@ set -euo pipefail
 
 mode="${1:-}"
 if [[ -z "$mode" ]]; then
-  echo "usage: fondo-pane-rotator <cpu|disk|profile>"
+  echo "usage: fondo-pane-rotator <cpu|net|disk|cores|profile|fx>"
   exit 2
 fi
 
@@ -12,8 +12,11 @@ widget_dir="${FONDO_WIDGET_DIR:-$HOME/.local/share/fondo/widgets}"
 default_duration=14
 case "$mode" in
   cpu) default_duration="${FONDO_CPU_ROTATE_SECS:-10}" ;;
+  net) default_duration="${FONDO_NET_ROTATE_SECS:-10}" ;;
   disk) default_duration="${FONDO_DISK_ROTATE_SECS:-12}" ;;
+  cores) default_duration="${FONDO_CORES_ROTATE_SECS:-10}" ;;
   profile) default_duration="${FONDO_PROFILE_ROTATE_SECS:-14}" ;;
+  fx) default_duration="${FONDO_FX_ROTATE_SECS:-12}" ;;
   *)
     echo "invalid mode: $mode"
     exit 2
@@ -58,12 +61,28 @@ while true; do
         command -v atop >/dev/null 2>&1 && cmds+=("atop")
       fi
       ;;
+    net)
+      # Barracuda readings with strong presence, plus live network tools.
+      if command -v upsilon-readings >/dev/null 2>&1; then
+        cmds+=("upsilon-readings" "upsilon-readings" "upsilon-readings" "upsilon-readings")
+      fi
+      command -v bmon >/dev/null 2>&1 && cmds+=("bmon --show-all")
+      has_widget speedometer && cmds+=("$widget_dir/speedometer")
+      cmds+=("watch -n 1 -c \"cat /proc/net/dev\"")
+      ;;
     disk)
+      command -v iostat >/dev/null 2>&1 && cmds+=("watch -n 2 -c 'iostat -dx 1 1'")
       command -v duf >/dev/null 2>&1 && cmds+=("watch -n 2 -c 'duf --theme ansi'")
       has_widget tree && cmds+=("$widget_dir/tree")
       has_widget stat && cmds+=("$widget_dir/stat")
-      has_widget speedometer && cmds+=("$widget_dir/speedometer")
       has_widget logs && cmds+=("$widget_dir/logs")
+      ;;
+    cores)
+      command -v mpstat >/dev/null 2>&1 && cmds+=("watch -n 2 -c 'mpstat -P ALL 1 1'")
+      cmds+=("watch -n 1 -c \"grep -E '^cpu' /proc/stat | head -n 16\"")
+      if (( cols >= 72 && lines >= 16 )); then
+        command -v htop >/dev/null 2>&1 && cmds+=("htop")
+      fi
       ;;
     profile)
       command -v fastfetch >/dev/null 2>&1 && cmds+=("watch -n 8 -c 'fastfetch --pipe false --bright-color true'")
@@ -71,6 +90,18 @@ while true; do
       has_widget code && cmds+=("$widget_dir/code")
       has_widget jp2a && cmds+=("$widget_dir/jp2a")
       has_widget map && cmds+=("$widget_dir/map")
+      has_widget mplayer && cmds+=("$widget_dir/mplayer")
+      ;;
+    fx)
+      # Prioritize Barracuda and map feed, keep cmatrix as occasional effect.
+      if command -v upsilon-readings >/dev/null 2>&1; then
+        cmds+=("upsilon-readings" "upsilon-readings" "upsilon-readings" "upsilon-readings" "upsilon-readings")
+      fi
+      has_widget map && cmds+=("$widget_dir/map" "$widget_dir/map")
+      command -v cmatrix >/dev/null 2>&1 && cmds+=("cmatrix -ab -u 10")
+      has_widget apg && cmds+=("$widget_dir/apg")
+      has_widget sshart && cmds+=("$widget_dir/sshart")
+      has_widget jp2a && cmds+=("$widget_dir/jp2a")
       has_widget mplayer && cmds+=("$widget_dir/mplayer")
       ;;
   esac

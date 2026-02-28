@@ -29,8 +29,23 @@ if [[ "${#widgets[@]}" -eq 0 ]]; then
   exit 1
 fi
 
+has_widget_name() {
+  local target="$1"
+  local w
+  for w in "${widgets[@]}"; do
+    [[ "$w" == "$target" ]] && return 0
+  done
+  return 1
+}
+
+iter=0
 while true; do
-  pick="${widgets[RANDOM % ${#widgets[@]}]}"
+  iter=$((iter + 1))
+  if has_widget_name "map" && (( iter % 5 == 0 )); then
+    pick="map"
+  else
+    pick="${widgets[RANDOM % ${#widgets[@]}]}"
+  fi
   printf '\033[1;96m[%s]\033[0m widget: \033[1;92m%s\033[0m\n\n' "$(date +%H:%M:%S)" "$pick"
   if command -v timeout >/dev/null 2>&1; then
     timeout --foreground "$DURATION" "$WIDGET_DIR/$pick" || true
