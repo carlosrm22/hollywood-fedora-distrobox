@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v locate >/dev/null 2>&1 && command -v pygmentize >/dev/null 2>&1
+  exit $?
+fi
+while true; do
+  mapfile -t files < <(locate -l 512 '/usr/*.java' '/usr/*.c' '/usr/*.cpp' 2>/dev/null | shuf)
+  for f in "${files[@]}"; do
+    [[ -r "$f" && -s "$f" && -f "$f" ]] || continue
+    pygmentize "$f" 2>/dev/null || true
+    sleep 2
+  done
+done

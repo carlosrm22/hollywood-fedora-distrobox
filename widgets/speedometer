@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v speedometer >/dev/null 2>&1
+  exit $?
+fi
+while true; do
+  iface="$(ip route 2>/dev/null | awk '/default/ {print $5; exit}')"
+  [[ -n "$iface" ]] || { sleep 1; continue; }
+  speedometer -tx "$iface" -rx "$iface" -i 0.75
+  sleep 1
+done

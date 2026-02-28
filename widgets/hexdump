@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v hexdump >/dev/null 2>&1
+  exit $?
+fi
+while true; do
+  for f in $(ls /usr/bin 2>/dev/null | shuf | head -n 50); do
+    head -c 4096 "/usr/bin/$f" 2>/dev/null | hexdump -C
+    sleep 0.7
+  done
+done

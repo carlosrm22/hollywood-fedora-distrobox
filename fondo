@@ -5,7 +5,7 @@ session="fondo"
 motion="${FONDO_MOTION:-1}"
 interval="${FONDO_LAYOUT_INTERVAL:-8}"
 missing=()
-for cmd in tmux btop procs duf cmatrix watch awk shuf tree stat man hexdump; do
+for cmd in tmux btop procs duf fastfetch cmatrix watch; do
   command -v "$cmd" >/dev/null 2>&1 || missing+=("$cmd")
 done
 
@@ -35,7 +35,7 @@ tmux set-option -t "$session" -gq status on
 tmux set-option -t "$session" -gq status-interval 1
 tmux set-option -t "$session" -gq status-style "bg=colour17,fg=colour45"
 tmux set-option -t "$session" -gq status-left-length 48
-tmux set-option -t "$session" -gq status-right-length 120
+tmux set-option -t "$session" -gq status-right-length 130
 tmux set-option -t "$session" -gq status-left "#[fg=colour51,bold] HOLLYWOOD #[fg=colour39]| #[fg=colour45]#S "
 tmux set-option -t "$session" -gq status-right "#[fg=colour45]%Y-%m-%d #[fg=colour51]%H:%M:%S #[fg=colour39]| m:${motion} i:${interval}s #[fg=colour39]| C-b q exit / l layout / r rotate"
 tmux set-option -t "$session" -gq pane-border-status top
@@ -50,18 +50,18 @@ tmux set-option -at "$session" -gq terminal-overrides ",xterm-256color:RGB,scree
 p1="$(tmux list-panes -t "$win_id" -F "#{pane_id}" | head -n1)"
 p2="$(tmux split-window -h -P -F "#{pane_id}" -t "$p1" "TERM=tmux-256color COLORTERM=truecolor procs --watch --color always --theme dark")"
 p3="$(tmux split-window -v -P -F "#{pane_id}" -t "$p1" "TERM=tmux-256color COLORTERM=truecolor watch -n 2 -c 'duf --theme ansi'")"
-p4="$(tmux split-window -v -P -F "#{pane_id}" -t "$p2" "TERM=tmux-256color COLORTERM=truecolor /home/carlos/.local/bin/fondo-cinema")"
+p4="$(tmux split-window -v -P -F "#{pane_id}" -t "$p2" "TERM=tmux-256color COLORTERM=truecolor watch -n 10 -c 'fastfetch --pipe false --bright-color true'")"
 p5="$(tmux split-window -v -P -F "#{pane_id}" -t "$p3" "TERM=tmux-256color COLORTERM=truecolor cmatrix -ab -u 10")"
-p6="$(tmux split-window -v -P -F "#{pane_id}" -t "$p4" "TERM=tmux-256color COLORTERM=truecolor watch -n 1 -c '/home/carlos/.local/bin/fondo-hud'")"
+p6="$(tmux split-window -v -P -F "#{pane_id}" -t "$p4" "TERM=tmux-256color COLORTERM=truecolor FONDO_WIDGET_DURATION=16 /home/carlos/.local/bin/fondo-widget-runner")"
 
 : "$p5" "$p6"
 
 tmux select-pane -t "$p1" -T "BTop CPU/RAM"
 tmux select-pane -t "$p2" -T "Processes"
 tmux select-pane -t "$p3" -T "Disk Usage"
-tmux select-pane -t "$p4" -T "Hollywood Feed"
+tmux select-pane -t "$p4" -T "System Profile"
 tmux select-pane -t "$p5" -T "Matrix"
-tmux select-pane -t "$p6" -T "Clock + Network"
+tmux select-pane -t "$p6" -T "Original Hollywood Widgets"
 
 tmux select-layout -t "$win_id" tiled
 tmux select-pane -t "$p1"

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v bmon >/dev/null 2>&1
+  exit $?
+fi
+exec bmon --show-all

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v man >/dev/null 2>&1
+  exit $?
+fi
+while true; do
+  mapfile -t pages < <(ls /usr/share/man/man1 2>/dev/null | sed 's/\.1\..*$//' | shuf | head -n 200)
+  for p in "${pages[@]}"; do
+    MANPAGER=cat man "$p" 2>/dev/null | sed -n '1,160p'
+    sleep 0.2
+  done
+done

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v apg >/dev/null 2>&1
+  exit $?
+fi
+while true; do apg -qlt -c /dev/urandom -n 1 -m 4; sleep 0.2; done

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v find >/dev/null 2>&1
+  exit $?
+fi
+while true; do
+  mapfile -t logs < <(find /var/log -type f -name '*.log' 2>/dev/null | shuf | head -n 200)
+  for log in "${logs[@]}"; do
+    sed -n '1,120p' "$log" 2>/dev/null || true
+    sleep 0.5
+  done
+done

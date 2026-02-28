@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WIDGET_DIR="${FONDO_WIDGET_DIR:-$HOME/.local/share/fondo/widgets}"
+DURATION="${FONDO_WIDGET_DURATION:-18}"
+
+if [[ ! -d "$WIDGET_DIR" ]]; then
+  echo "Widget dir missing: $WIDGET_DIR"
+  exit 1
+fi
+
+list_available() {
+  local w
+  for w in "$WIDGET_DIR"/*; do
+    [[ -x "$w" ]] || continue
+    "$w" --check >/dev/null 2>&1 && basename "$w"
+  done
+}
+
+if [[ "${1:-}" == "--list" ]]; then
+  list_available | sort
+  exit 0
+fi
+
+mapfile -t widgets < <(list_available)
+if [[ "${#widgets[@]}" -eq 0 ]]; then
+  echo "No available hollywood-style widgets (missing dependencies)."
+  echo "Tip: install extras like apg, atop, bmon, ccze, jp2a, speedometer, mplayer"
+  exit 1
+fi
+
+while true; do
+  pick="${widgets[RANDOM % ${#widgets[@]}]}"
+  printf '\033[1;96m[%s]\033[0m widget: \033[1;92m%s\033[0m\n\n' "$(date +%H:%M:%S)" "$pick"
+  if command -v timeout >/dev/null 2>&1; then
+    timeout --foreground "$DURATION" "$WIDGET_DIR/$pick" >/dev/null 2>&1 || true
+  else
+    "$WIDGET_DIR/$pick" >/dev/null 2>&1 || true
+  fi
+  clear
+done

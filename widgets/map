@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+img="${FONDO_MAP_IMAGE:-$HOME/.local/share/fondo/assets/map.jpg}"
+if [[ "${1:-}" == "--check" ]]; then
+  command -v jp2a >/dev/null 2>&1 && [[ -r "$img" ]]
+  exit $?
+fi
+while true; do
+  jp2a --colors -z --fill "$img"
+  sleep 1
+done

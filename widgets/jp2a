@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v locate >/dev/null 2>&1 && command -v jp2a >/dev/null 2>&1
+  exit $?
+fi
+while true; do
+  mapfile -t files < <(locate -l 512 '/usr/*jpg' 2>/dev/null | shuf)
+  for f in "${files[@]}"; do
+    [[ -r "$f" && -s "$f" && -f "$f" ]] || continue
+    clear
+    jp2a --colors --term-fit "$f"
+    sleep 0.57
+  done
+done

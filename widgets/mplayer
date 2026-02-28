@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+vid="${FONDO_WAVE_VIDEO:-$HOME/.local/share/fondo/assets/soundwave.mp4}"
+if [[ "${1:-}" == "--check" ]]; then
+  command -v mplayer >/dev/null 2>&1 && [[ -r "$vid" ]]
+  exit $?
+fi
+DISPLAY= exec mplayer -vo caca -loop 0 -ss $((RANDOM % 100)) -speed 100 "$vid"

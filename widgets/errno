@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--check" ]]; then
+  command -v errno >/dev/null 2>&1
+  exit $?
+fi
+while true; do errno --list | shuf; sleep 0.6; done
