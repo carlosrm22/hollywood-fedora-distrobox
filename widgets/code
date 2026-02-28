@@ -1,14 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 if [[ "${1:-}" == "--check" ]]; then
-  command -v locate >/dev/null 2>&1 && command -v pygmentize >/dev/null 2>&1
+  command -v pygmentize >/dev/null 2>&1
   exit $?
 fi
+
+collect_files() {
+  if command -v locate >/dev/null 2>&1; then
+    locate -l 1024 '/usr/*.java' '/usr/*.c' '/usr/*.cpp' 2>/dev/null || true
+  fi
+  find /usr/include /usr/src -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.java' \) 2>/dev/null || true
+}
+
 while true; do
-  mapfile -t files < <(locate -l 512 '/usr/*.java' '/usr/*.c' '/usr/*.cpp' 2>/dev/null | shuf)
+  mapfile -t files < <(collect_files | shuf | head -n 300)
+  if [[ "${#files[@]}" -eq 0 ]]; then
+    mapfile -t files < <(find /etc -type f 2>/dev/null | shuf | head -n 80)
+  fi
+
   for f in "${files[@]}"; do
     [[ -r "$f" && -s "$f" && -f "$f" ]] || continue
-    pygmentize "$f" 2>/dev/null || true
+    pygmentize "$f" 2>/dev/null || sed -n '1,120p' "$f" 2>/dev/null || true
     sleep 2
   done
 done

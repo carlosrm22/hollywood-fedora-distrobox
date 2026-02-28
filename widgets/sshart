@@ -1,16 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 if [[ "${1:-}" == "--check" ]]; then
   command -v ssh-keygen >/dev/null 2>&1
   exit $?
 fi
+
 tmpdir="/tmp/fondo-sshart"
 trap 'rm -rf "$tmpdir" >/dev/null 2>&1 || true' EXIT
+
 while true; do
   mkdir -p "$tmpdir"
   tmpfile="$(mktemp -p "$tmpdir" -t XXXXXX)"
-  rm -f "$tmpfile"
-  ssh-keygen -vvv -b 1024 -t dsa -N '' -f "$tmpfile" 2>/dev/null || true
+  rm -f "$tmpfile" "$tmpfile.pub"
+
+  # DSA is usually disabled now; use ed25519 to keep randomart output working.
+  if ssh-keygen -q -t ed25519 -N '' -f "$tmpfile" >/dev/null 2>&1; then
+    ssh-keygen -lvf "$tmpfile.pub" 2>/dev/null || true
+  fi
+
   rm -f "$tmpfile" "$tmpfile.pub" >/dev/null 2>&1 || true
   sleep 2
 done

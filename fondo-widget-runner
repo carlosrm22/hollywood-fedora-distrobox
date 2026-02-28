@@ -33,9 +33,9 @@ while true; do
   pick="${widgets[RANDOM % ${#widgets[@]}]}"
   printf '\033[1;96m[%s]\033[0m widget: \033[1;92m%s\033[0m\n\n' "$(date +%H:%M:%S)" "$pick"
   if command -v timeout >/dev/null 2>&1; then
-    timeout --foreground "$DURATION" "$WIDGET_DIR/$pick" >/dev/null 2>&1 || true
+    timeout --foreground "$DURATION" "$WIDGET_DIR/$pick" || true
   else
-    "$WIDGET_DIR/$pick" >/dev/null 2>&1 || true
+    "$WIDGET_DIR/$pick" || true
   fi
   clear
 done
