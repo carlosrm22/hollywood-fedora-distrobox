@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 img="${FONDO_MAP_IMAGE:-$HOME/.local/share/fondo/assets/map.jpg}"
+
 if [[ "${1:-}" == "--check" ]]; then
   [[ -r "$img" ]] || exit 1
   if command -v jp2a >/dev/null 2>&1; then
@@ -9,11 +11,22 @@ if [[ "${1:-}" == "--check" ]]; then
   command -v chafa >/dev/null 2>&1
   exit $?
 fi
-while true; do
+
+render_once() {
+  local cols lines width height
+  cols=$(tput cols 2>/dev/null || echo 80)
+  lines=$(tput lines 2>/dev/null || echo 24)
+  width=$(( cols > 8 ? cols - 2 : cols ))
+  height=$(( lines > 6 ? lines - 2 : lines ))
+
   if command -v jp2a >/dev/null 2>&1; then
-    jp2a --colors -z --fill "$img"
+    jp2a --colors -z --width="$width" --height="$height" "$img"
   else
-    chafa --colors full --animate off --size "$(tput cols)x$(tput lines)" "$img" 2>/dev/null || true
+    chafa --colors full --animate off --size "${width}x${height}" "$img" 2>/dev/null || true
   fi
+}
+
+while true; do
+  render_once
   sleep 1
 done

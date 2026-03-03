@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "--check" ]]; then
+  command -v nyancat >/dev/null 2>&1
+  exit $?
+fi
+
+cols=$(tput cols 2>/dev/null || echo 80)
+lines=$(tput lines 2>/dev/null || echo 24)
+
+if (( cols < 24 || lines < 10 )); then
+  exec nyancat -n -s -f 120
+fi
+
+exec nyancat -n -s -W "$cols" -H "$lines"

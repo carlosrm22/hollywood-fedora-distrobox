@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "--check" ]]; then
+  if command -v lavat >/dev/null 2>&1; then
+    exit 0
+  fi
+  command -v cmatrix >/dev/null 2>&1
+  exit $?
+fi
+
+if command -v lavat >/dev/null 2>&1; then
+  exec lavat
+fi
+
+exec cmatrix -ab -u 8

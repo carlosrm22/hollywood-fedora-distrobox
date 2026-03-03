@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "--check" ]]; then
+  command -v peaclock >/dev/null 2>&1
+  exit $?
+fi
+
+exec peaclock --config-dir NONE

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "--check" ]]; then
+  if command -v gtop >/dev/null 2>&1; then
+    exit 0
+  fi
+  command -v procs >/dev/null 2>&1
+  exit $?
+fi
+
+if command -v gtop >/dev/null 2>&1; then
+  exec gtop
+fi
+
+exec procs --watch --color always --theme dark

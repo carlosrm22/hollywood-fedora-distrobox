@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "--check" ]]; then
+  command -v cbonsai >/dev/null 2>&1
+  exit $?
+fi
+
+exec cbonsai -li -t 0.02 -w 1.8 -M 6 -L 35

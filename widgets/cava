@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "--check" ]]; then
+  command -v cava >/dev/null 2>&1
+  exit $?
+fi
+
+tmp_cfg="$(mktemp /tmp/fondo-cava.XXXXXX.conf)"
+trap "rm -f '$tmp_cfg' >/dev/null 2>&1 || true" EXIT
+
+cols=$(tput cols 2>/dev/null || echo 80)
+bars=$(( cols / 3 ))
+(( bars < 8 )) && bars=8
+(( bars > 32 )) && bars=32
+
+cat > "$tmp_cfg" <<CFG
+[general]
+framerate = 60
+bars = ${bars}
+sleep_timer = 1
+
+[input]
+method = pulse
+source = auto
+
+[output]
+method = ncurses
+channels = stereo
+mono_option = average
+ascii_max_range = false
+bar_delimiter = 0
+
+[color]
+gradient = 1
+gradient_count = 4
+gradient_color_1 = '#00d4ff'
+gradient_color_2 = '#00ff9c'
+gradient_color_3 = '#ffee00'
+gradient_color_4 = '#ff5f87'
+CFG
+
+exec cava -p "$tmp_cfg"
